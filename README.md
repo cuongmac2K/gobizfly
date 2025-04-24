@@ -1,81 +1,74 @@
-# Gobizfly
+Terraform Provider
+==================
 
-Gobizfly is a Go client library for accessing Bizfly API
+- Website: https://www.terraform.io
+- [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
+- Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
-You can view the client API docs here: https://pkg.go.dev/github.com/bizflycloud/gobizfly
+<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
 
-# Install
-```bash
-go get github.com/bizflycloud/gobizfly@vX
+Building The Provider
+---------------------
+
+Clone repository to: `$GOPATH/src/github.com/bizflycloud/terraform-provider-bizflycloud`
+
+```sh
+$ mkdir -p $GOPATH/src/github.com/bizflycloud; cd $GOPATH/src/github.com/bizflycloud
+$ git clone git@github.com:bizflycloud/terraform-provider-bizflycloud
 ```
 
-# Usage
-```go
-import "github.com/bizflycloud/gobizfly"
-```
-Create a new Bizfly Cloud client, then use the exposed services to access different part of the Bizfly API 
+Enter the provider directory and build the provider
 
-# Authentication
-Currently, token is the only method of authenticating with the API. You can generate token via username/password or application credential
-
-```go
-package main
-import (
-	"github.com/bizflycloud/gobizfly"
-	"log"
-)
-
-func main() {
-	tok, err := client.Token.Create(ctx, &gobizfly.TokenCreateRequest{Username: username, Password: password, AuthMethod: "password"})
-	if err != nil {
-		log.Fatal(err)
-	}
-	client.SetKeystoneToken(tok)
-}
+```sh
+$ cd $GOPATH/src/github.com/bizflycloud/terraform-provider-bizflycloud
+$ make build
 ```
 
-# Example
+Using the provider
+----------------------
 
-```go
-package main
+See the [Bizfly Cloud Provider documentation](https://registry.terraform.io/providers/bizflycloud/bizflycloud/latest) to get started using the Bizfly Cloud provider.
 
-import (
-	"context"
-	"log"
-	"time"
+Developing the Provider
+---------------------------
 
-	"github.com/bizflycloud/gobizfly"
-)
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.11+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
-const (
-	host     = "https://manage.bizflycloud.vn"
-	username = "foo@bar"
-	password = "foobar"
-)
+To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
-func main() {
-	client, err := gobizfly.NewClient(
-		gobizfly.WithAPIURL(host),
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancelFunc()
-	tok, err := client.Token.Create(ctx, &gobizfly.TokenCreateRequest{Username: username, Password: password})
-	if err != nil {
-		log.Fatal(err)
-	}
-	client.SetKeystoneToken(tok)
-
-	lbs, err := client.CloudLoadBalancer.List(ctx, &gobizfly.ListOptions{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("%#v\n", lbs)
-}
+```sh
+$ make build
+...
+$ $GOPATH/bin/terraform-provider-bizflycloud
+...
 ```
 
-# Documentation
-For details on all the functionality in this library, checkout [Gobizfly documentation](https://pkg.go.dev/github.com/bizflycloud/gobizfly)
+In order to test the provider, you can simply run `make test`.
+
+```sh
+$ make test
+```
+
+In order to run the full suite of acceptance tests, run `make testacc`.
+
+*Note:* Acceptance tests create real resources, and often cost money to run.
+
+```sh
+$ make testacc
+```
+
+For information about writing acceptance tests, see the main Terraform [contributing guide](https://github.com/hashicorp/terraform/blob/master/.github/CONTRIBUTING.md#writing-acceptance-tests).
+
+Releasing the Provider
+----------------------
+
+This repository contains a GitHub Action configured to automatically build and
+publish assets for release when a tag is pushed that matches the pattern `v*`
+(ie. `v0.1.0`).
+
+A [Gorelaser](https://goreleaser.com/) configuration is provided that produces
+build artifacts matching the [layout required](https://www.terraform.io/docs/registry/providers/publishing.html#manually-preparing-a-release)
+to publish the provider in the Terraform Registry.
+
+Releases will appear as drafts. Once marked as published on the GitHub Releases page,
+they will become available via the Terraform Registry.

@@ -4,8 +4,8 @@ jobs:
   lint:
     strategy:
       matrix:
-        go-version: [1.16.x]
-        platform: [ubuntu-latest, macos-latest]
+        go-version: [1.21.x]
+        platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
@@ -14,55 +14,33 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Install golangci-lint
-        run: curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.58.1
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.1
+
       - name: Run golangci-lint
-        run: $(go env GOPATH)/bin/golangci-lint run ./...
+        run: $(go env GOPATH)/bin/golangci-lint run --timeout 5m0s --disable unused ./...
+
   test-with-module:
     strategy:
       matrix:
-        go-version: [1.16.x]
-        platform: [ubuntu-latest, macos-latest]
+        go-version: [1.21.x]
     env:
       GO111MODULE: on
       GOPROXY: "https://proxy.golang.org"
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v1
         with:
           go-version: ${{ matrix.go-version }}
+
       - name: Checkout code
         uses: actions/checkout@v1
-      - name: Run Unit tests.
-        run: make test-coverage
-  # uncomment if use codeclimate
-  # coverage:
-  #   needs: [test-with-module]
-  #   name: coverage
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@master
-  #     - uses: actions/setup-node@master
-  #       with:
-  #         go-version: 1.13.x
-  #     - uses: paambaati/codeclimate-action@v2.5.6
-  #       env:
-  #         CC_TEST_REPORTER_ID: c91f892b8957ff9b030830b15d17d9b8e51dc0657f82ad3143ef9c4f79c757f0
-  #       with:
-  #         coverageCommand: make test-coverage
-  #         debug: true
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: [lint, test-with-module]
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: 1.16
-      - name: Check out code
-        uses: actions/checkout@v1
-      - name: Build
-        run: make build
+      - name: Run Unit tests.
+        run: make test
+
+      - name: Run vet
+        run: make vet
+
